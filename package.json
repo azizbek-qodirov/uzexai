@@ -1,0 +1,22 @@
+{
+  "name": "uzex-assist",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "node --env-file-if-exists=.env server.mjs",
+    "start": "node --env-file-if-exists=.env server.mjs",
+    "test": "node --test tests/*.test.mjs",
+    "check": "node --check server.mjs && node --check lib/store.mjs && node --check lib/assistant.mjs && node --check lib/live.mjs && node --check lib/voice-actions.mjs && node --check public/app.js && node --check public/markdown.js && node --check public/live-voice.js && node --check public/mic-worklet.js && node --check public/voice-ui.js && node --check public/voice-workspace.js"
+  },
+  "engines": {
+    "node": ">=22.13"
+  },
+  "dependencies": {
+    "markdown-it": "^15.0.3",
+    "ws": "^8.22.1"
+  },
+  "devDependencies": {
+    "linkedom": "^0.18.15"
+  }
+}

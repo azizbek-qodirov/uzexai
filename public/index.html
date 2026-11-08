@@ -1,0 +1,65 @@
+<!doctype html>
+<html lang="uz">
+<head>
+  <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#040b1e"><meta name="description" content="UZEX xizmatlari uchun ovozli va matnli AI yordamchi. Hackathon MVP.">
+  <title>UZEX Assist — Savdo suhbatdan boshlanadi</title>
+  <link rel="icon" href="/mark.svg" type="image/svg+xml"><link rel="stylesheet" href="/style.css"><link rel="stylesheet" href="/neon.css"><link rel="stylesheet" href="/voice-session.css">
+  <script type="module" src="/app.js"></script>
+</head>
+<body>
+<div class="app-shell">
+  <aside class="sidebar" id="sidebar">
+    <a class="brand" href="/" aria-label="UZEX Assist bosh sahifa"><span class="brand-mark">u<span>↗</span></span><span>UZEX <b>Assist</b><small>INTELLIGENT EXCHANGE</small></span></a>
+    <button id="newChat" class="new-chat"><span>＋</span> Yangi suhbat <span class="key-hint">↵</span></button>
+    <div class="nav-caption">ISH MAYDONI</div>
+    <nav aria-label="Asosiy navigatsiya">
+      <button class="nav-item active" data-nav="chat"><span data-icon="chat"></span>Suhbat<span class="nav-dot"></span></button>
+      <button class="nav-item" data-prompt="Bozor tahlili va narxlar"><span data-icon="chart"></span>Bozor tahlili </button>
+      <button class="nav-item" data-prompt="Hisobim va buyurtmalar holati"><span data-icon="folder"></span>Operatsiyalarim</button>
+      <button class="nav-item" data-prompt="UZEX xizmatlarini ko‘rsating"><span data-icon="grid"></span>UZEX xizmatlari <span class="arrow">↗</span></button>
+    </nav>
+  </aside>
+  <main>
+    <header class="topbar">
+      <div class="breadcrumb"><button id="menuButton" class="icon-button mobile-menu" aria-label="Menyuni ochish"><span data-icon="menu"></span></button><span class="breadcrumb-icon" data-icon="spark"></span><strong>AI yordamchi</strong><span class="slash">/</span><span id="roleBreadcrumb">Mijoz ish maydoni</span></div>
+      <div class="topbar-right"><button class="icon-button" id="rulesButton" title="Yordamchi qoidalari" aria-label="Yordamchi qoidalari"><span data-icon="shield"></span></button></div>
+    </header>
+    <div class="workspace-toolbar"><div class="workspace-label"><span class="live-indicator"></span><span>UZEX xizmatlari. Bitta suhbatda.</span></div><div class="role-selector" aria-label="Ishtirokchi roli"><button data-role="buyer" class="selected"><span data-icon="bag"></span>Mijoz</button><button data-role="seller"><span data-icon="store"></span>Sotuvchi</button></div></div>
+    <section class="conversation" id="conversation" aria-label="Yordamchi bilan suhbat">
+      <div id="welcome" class="welcome">
+        <div class="welcome-eyebrow"><span class="mini-logo" data-icon="spark"></span> SAVDONING YANGI TILI</div>
+        <h1>Shunchaki gapiring.<br><span>Biz bajaramiz.</span></h1>
+        <p class="welcome-description" id="welcomeDescription">Mahsulot topishdan buyurtmani tasdiqlashgacha — barchasini ovoz orqali bajaring.</p>
+        <div class="mode-description"><span class="mode-icon" data-icon="bag" id="modeIcon"></span><div><strong id="modeTitle">Mijoz sifatida boshlang</strong><p id="modeDescription">Ehtiyojingizni ayting. Qolganini birga bajaramiz.</p></div><span class="mode-badge">FAOL REJIM</span></div>
+        <div class="suggestions" id="suggestions"></div>
+        <div class="welcome-footnote"><span data-icon="shield"></span> Ma’lumotlarni topishdan so‘rov tayyorlashgacha — sizning nazoratingizda.</div>
+      </div>
+      <div id="messages" class="messages" aria-live="polite" aria-relevant="additions"></div>
+    </section>
+    <div class="composer-area">
+      <div class="voice-panel" id="voicePanel" hidden><div class="voice-orb"><span data-icon="mic"></span></div><div><strong>Tinglayapman…</strong><p id="voiceTranscript">So‘rovingizni ayting. Matn yuborishdan oldin tekshiriladi.</p></div><button id="stopVoice" class="icon-button" aria-label="Tinglashni to‘xtatish"><span data-icon="stop"></span></button></div>
+      <div id="notice" class="notice" role="status" hidden></div>
+      <form class="composer" id="chatForm">
+        <label class="sr-only" for="messageInput">Yordamchiga xabar</label><textarea id="messageInput" rows="1" maxlength="6000" placeholder="Masalan, Toshkentdan 20 tonna sement topib bering..."></textarea>
+        <div class="composer-bottom"><div class="composer-left"><span class="assistant-chip"><span data-icon="spark"></span> UZEX Assist</span></div><div class="composer-actions"><button type="button" id="voiceButton" class="voice-button"><span data-icon="mic"></span><span>Diktovka</span></button><button type="submit" id="sendButton" class="send-button" aria-label="Xabarni yuborish"><span data-icon="up"></span></button></div></div>
+      </form>
+      <div class="composer-caption"><span>AI xato qilishi mumkin. Muhim ma’lumotlarni tekshiring.</span><span>Enter — yuborish · Shift+Enter — yangi qator</span></div>
+    </div>
+  </main>
+</div>
+<div class="voice-launch-dock"><button type="button" id="startVoiceMain" class="voice-launch-main" aria-label="UzEx AI — jonli ovozli suhbatni boshlash" title="Jonli ovozli suhbatni boshlash"><span class="voice-launch-icon" data-icon="mic"></span><strong>UzEx AI</strong><span class="voice-launch-arrow">↗</span></button></div>
+<dialog id="liveCall" class="voice-session" aria-labelledby="voiceSessionTitle" hidden>
+  <header class="voice-session-header"><div class="voice-session-brand"><span class="mini-logo" data-icon="activity"></span><div><strong id="voiceSessionTitle">Jonli suhbat</strong><span>UZEX Assist</span></div></div><div class="voice-session-meta"><span id="liveRoleLabel" class="voice-role-label">Mijoz</span><span id="liveClock">00:00</span><button type="button" id="closeLive" class="icon-button" aria-label="Suhbatni tugatish">✕</button></div></header>
+  <div class="voice-session-grid">
+    <section class="voice-stage" aria-label="Ovozli suhbat va matni">
+      <div class="voice-stage-inner"><div class="live-call-orb" id="liveOrb"><span data-icon="activity"></span></div><span class="voice-state-caption">JONLI MULOQOT</span><h2 id="liveStatus" role="status">Ulanmoqda…</h2><p id="liveTranscript">Mikrofonga ruxsat bering va gapirishni boshlang.</p><p class="voice-hint" id="voiceHint">Masalan: “Toshkentdan 20 tonna sement kerak”</p></div>
+      <section class="voice-transcripts" id="voiceTranscripts" aria-label="Suhbat matni"><div class="voice-transcript-heading"><h3>Suhbat matni</h3><span>JONLI TRANSKRIPT</span></div><div id="liveTranscriptList" class="voice-transcript-list" role="log" aria-label="Siz va yordamchi transkripti"><p class="voice-transcript-empty">Siz va yordamchining so‘zlari shu yerda ko‘rinadi.</p></div></section>
+    </section>
+    <aside class="voice-workspace" aria-label="Suhbatdagi takliflar va tasdiqlash kartalari"><header class="voice-workspace-heading"><div><span>SUHBATDAGI NATIJALAR</span><h2>Takliflar va so‘rovlar</h2></div><span id="voiceCardCount" class="voice-card-count">0</span></header><p class="voice-workspace-hint">Kartalar shu yerda qoladi. Shartlarni tekshiring va ovoz bilan boshqaring.</p><div id="liveCards" class="voice-card-scroller"><div class="voice-cards-empty"><span data-icon="layers"></span><h3>So‘rovingizdan boshlaymiz</h3><p>Nimani qidirayotganingizni ayting.<br>Mos takliflar shu yerda paydo bo‘ladi.</p></div></div><div class="voice-consent-guide"><span data-icon="mic"></span><span>Tasdiqlash uchun: <strong>“Ha, tasdiqlayman”</strong><br>Bekor qilish uchun: <strong>“Bekor qiling”</strong></span></div></aside>
+  </div>
+  <div id="liveNotice" class="notice voice-session-notice" role="alert" hidden></div>
+  <footer class="voice-session-controls"><button type="button" id="muteLive" class="voice-control" aria-pressed="false"><span data-icon="mic"></span><span>Mikrofonni o‘chirish</span></button><button type="button" id="interruptLive" class="voice-control"><span data-icon="stop"></span><span>Javobni to‘xtatish</span></button><button type="button" id="toggleTranscripts" class="voice-control" aria-pressed="true"><span data-icon="chat"></span><span>Suhbat matni</span></button><button type="button" id="endLive" class="voice-end-button"><span data-icon="phone"></span><span>Suhbatni tugatish</span></button></footer>
+</dialog>
+<dialog id="infoDialog"><div class="dialog-header"><span class="mini-logo" data-icon="shield"></span><button class="icon-button" id="closeDialog" aria-label="Yopish">✕</button></div><h2 id="dialogTitle">Yordamchi qoidalari</h2><div id="dialogContent"></div><button id="dialogDone" class="primary-button">Tushunarli</button></dialog>
+</body></html>
