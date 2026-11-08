@@ -48,7 +48,7 @@ Browser providers may process dictation audio. During a live call audio and tran
 - Inline tool results, offer cards, confirmation cards, error/retry states, and a focused two-column responsive layout.
 - Official service links: exchange, state procurement, logistics, yarmarka, agro and business procurement.
 
-All inventory, seller names, quantities, prices, balances, delivery estimates and transactions are **synthetic**. Seed balance: 500,000,000 UZS; quantities: tonnes; prices: UZS/tonne. Totals exclude transport, taxes and fees. Seller listings are stored separately from the reference demo inventory; they are not published to the buyer catalogue. This is a demonstration of orchestration, not a full exchange matching engine.
+Inventory, seller names, quantities, balances, delivery estimates and transactions are **synthetic**. The eight demo lot prices now use explicitly mapped public weekly benchmarks (their product names match the reference); they are not executable exchange offers. Seed balance: 500,000,000 UZS; quantities: tonnes; prices: UZS/tonne. Totals exclude transport, taxes and fees. Seller listings are stored separately from the reference demo inventory; they are not published to the buyer catalogue. This is a demonstration of orchestration, not a full exchange matching engine.
 
 ## Rules and extension points
 
@@ -80,3 +80,17 @@ The neon palette and live voice animations use the supplied cyan/blue/violet ref
 - [Gemini Live WebSocket API](https://ai.google.dev/api/live)
 
 Independent hackathon prototype; not an official UzEx application.
+
+
+
+## Public UZEX weekly price catalogue
+
+The checked-in snapshot imports **5,384 rows across all eight periods published in the period selector**, including **1,327 domestic products** and **3 export products** in the latest selected week, 26–30 October 2026. Individual rows can be dated earlier. Collected 8 November 2026 from [UZEX WeeklyQuotes](https://uzex.uz/WeeklyQuotes?ImportId=102); pagination was followed through the final page for every period.
+
+`data/quotes/manifest.json` records source URLs, row counts and retrieval time. Raw source names, prices, signed price changes, percentage text and row dates are retained. `weekly_quotes` is populated in SQLite on startup for both new and existing databases. The `market_quotes` assistant tool supports product search, period selection and pagination (`offset`, `limit`, maximum 100). Try “Sement narxlari” or “Karbamid haftalik kotirovkalari”. Text and live voice show source-backed result tables.
+
+These are published weekly quotations, **not today's live prices or available stock**. Names may specify litres, pieces, cubic metres or foreign currency; the weekly table has no separate unit/currency column. Missing units/currencies remain unspecified, and source anomalies are retained rather than silently corrected. The separate current contracts page lists base prices and lot sizes, which cannot safely be treated as weekly per-unit execution prices; it is not imported into this snapshot.
+
+The eight benchmark mappings live in `lib/quotes.mjs`. Startup updates their names/prices once, preserves stock, balances and completed orders, and cancels pending orders for those lots so users review new prices. Other listings are untouched. Quantities, sellers and regions remain demonstration data. Reference products are searchable as quotes, not fabricated purchasable inventory.
+
+Refresh the published weekly snapshot with Python 3: `python scripts/import-quotes.py`, then restart the app. The importer discovers the period selector, follows all pages and validates consecutive row numbers before writing the manifest. It fails on missing/invalid data. No API key is required. Review source changes before committing a refresh; benchmark mappings are deliberately explicit and versioned.

@@ -24,7 +24,7 @@ test('existing lot IDs migrate with pending actions, orders and stock preserved'
     store = createStore(path);
     const account = store.execute('account_overview', {}, 'a', 'buyer');
     assert.equal(account.orders[0].lot_id, 'LOT-1001');
-    assert.equal(account.balance, 492800000);
+    assert.equal(account.balance, 500000000 - 10 * 533208.79);
     const lots = store.execute('search_lots', { query: 'sement', region: 'Toshkent' }, 'a', 'buyer').lots;
     assert.equal(lots[0].quantity, 230);
     assert.doesNotMatch(lots[0].seller, /demo/i);
@@ -51,7 +51,7 @@ test('buyer search, prepare, explicit confirmation and duplicate protection', ()
     s.confirm(action.id, 'a', 'buyer');
     const a = s.execute('account_overview', {}, 'a', 'buyer');
     assert.equal(a.orders.length, 1);
-    assert.equal(a.balance, 500000000 - 20 * 720000);
+    assert.equal(a.balance, 500000000 - 20 * 533208.79);
     assert.throws(() => s.confirm(action.id, 'a', 'buyer'));
     assert.equal(s.execute('account_overview', {}, 'a', 'buyer').balance, a.balance);
   } finally { s.close(); }
@@ -85,11 +85,11 @@ test('stock and balance rechecked atomically at confirmation', () => {
     assert.throws(() => s.confirm(b.id, 'b', 'buyer'));
     assert.equal(s.execute('account_overview', {}, 'b', 'buyer').balance, 500000000);
     assert.equal(s.execute('search_lots', { query: 'sement', region: 'Toshkent' }, 'b', 'buyer').lots[0].quantity, 40);
-    const first = s.execute('prepare_order', { lot_id: 'LOT-1006', quantity: 4 }, 'c', 'buyer').action;
-    const second = s.execute('prepare_order', { lot_id: 'LOT-1006', quantity: 4 }, 'c', 'buyer').action;
+    const first = s.execute('prepare_order', { lot_id: 'LOT-1006', quantity: 2 }, 'c', 'buyer').action;
+    const second = s.execute('prepare_order', { lot_id: 'LOT-1006', quantity: 2 }, 'c', 'buyer').action;
     s.confirm(first.id, 'c', 'buyer');
     assert.throws(() => s.confirm(second.id, 'c', 'buyer'));
-    assert.equal(s.execute('search_lots', { query: 'mis' }, 'c', 'buyer').lots[0].quantity, 36);
+    assert.equal(s.execute('search_lots', { query: 'mis' }, 'c', 'buyer').lots[0].quantity, 38);
   } finally { s.close(); }
 });
 
@@ -107,7 +107,7 @@ test('offline demo collects listing fields across turns and prepares buyer order
     const search = await ai.chat('Toshkentdan 20 tonna sement topib bering', buyer, 'a', 'buyer');
     assert.equal(search.cards[0].lots[0].id, 'LOT-1001');
     const purchase = await ai.chat('LOT-1001 dan 20 tonna olaman', buyer, 'a', 'buyer');
-    assert.equal(purchase.cards[0].action.total, 14400000);
+    assert.equal(purchase.cards[0].action.total, 20 * 533208.79);
     assert.equal(s.execute('account_overview', {}, 'a', 'buyer').orders.length, 0);
   } finally { s.close(); }
 });
@@ -132,3 +132,4 @@ test('Gemini tool roundtrip preserves call metadata and returns database-backed 
     assert.equal(count, 2); assert.equal(result.engine, 'gemini'); assert.equal(result.cards[0].lots.length, 3);
   } finally { globalThis.fetch = original; s.close(); }
 });
+

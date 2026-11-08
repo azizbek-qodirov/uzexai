@@ -29,7 +29,7 @@ function hydrate(root = document) { root.querySelectorAll('[data-icon]').forEach
 hydrate();
 const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 const fmt = n => new Intl.NumberFormat('uz-UZ', { maximumFractionDigits: 2 }).format(n);
-const toolNames = { search_lots: 'Takliflar qidirildi', market_summary: 'Bozor tahlili', account_overview: 'Hisob tekshirildi', service_directory: 'Xizmatlar topildi', prepare_listing: 'Sotuv e’loni tayyorlandi', prepare_order: 'Xarid so‘rovi tayyorlandi' };
+const toolNames = { market_quotes: 'UZEX haftalik kotirovkalari', search_lots: 'Takliflar qidirildi', market_summary: 'Bozor tahlili', account_overview: 'Hisob tekshirildi', service_directory: 'Xizmatlar topildi', prepare_listing: 'Sotuv e’loni tayyorlandi', prepare_order: 'Xarid so‘rovi tayyorlandi' };
 let role = 'buyer', busy = false, recognition = null, listening = false;
 const views = { buyer: { html: '' }, seller: { html: '' } };
 const suggestionSets = {
@@ -92,6 +92,7 @@ function applyActionStatus(a) {
   });
 }
 function card(c) {
+  if (c.type === 'quotes') return `<div class="table-wrap"><p>${esc(c.note)}</p><p>${c.total} ta natija · ${c.offset + 1}–${c.offset + c.quotes.length} · Yangilangan: ${esc(c.fetched_at)}</p><table class="market-table"><thead><tr><th>Mahsulot / birlik</th><th>Manbadagi narx</th><th>O‘zgarish</th><th>Davr</th><th>Manba</th></tr></thead><tbody>${c.quotes.map(q => `<tr><td>${esc(q.name)}</td><td>${fmt(q.price)}</td><td>${fmt(q.change)} (${esc(q.change_percent)})</td><td>${esc(q.period_start)} – ${esc(q.period_end)}</td><td><a href="${esc(q.source_url)}" target="_blank" rel="noopener">UZEX</a></td></tr>`).join('')}</tbody></table></div>`;
   if (c.type === 'lots') return lotsCard(c.lots);
   if (c.type === 'action') return actionCard(c.action);
   if (c.type === 'services') return c.services.map(s => `<a class="service-card" href="${esc(s.url)}" target="_blank" rel="noopener"><strong>${esc(s.name)} <span>↗</span></strong><p>${esc(s.description)}</p></a>`).join('');
@@ -210,3 +211,4 @@ $('#closeDialog').addEventListener('click', () => $('#infoDialog').close());
 $('#dialogDone').addEventListener('click', () => $('#infoDialog').close());
 $('#infoDialog').addEventListener('click', e => { if (e.target === $('#infoDialog')) { const r = e.target.getBoundingClientRect(); if (e.clientX < r.left || e.clientX > r.right || e.clientY < r.top || e.clientY > r.bottom) e.target.close(); } });
 renderWelcome();
+

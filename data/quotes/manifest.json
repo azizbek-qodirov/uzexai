@@ -1,0 +1,53 @@
+{
+  "fetched_at": "2026-11-08T10:01:29.283179+00:00",
+  "periods": [
+    {
+      "id": 102,
+      "label": "26.10.2026 - 30.10.2026 (Внутренние)",
+      "count": 1327,
+      "url": "https://uzex.uz/WeeklyQuotes?ImportId=102"
+    },
+    {
+      "id": 103,
+      "label": "26.10.2026 - 30.10.2026 (Экспортные)",
+      "count": 3,
+      "url": "https://uzex.uz/WeeklyQuotes?ImportId=103"
+    },
+    {
+      "id": 98,
+      "label": "19.10.2026 - 23.10.2026 (Внутренние)",
+      "count": 1333,
+      "url": "https://uzex.uz/WeeklyQuotes?ImportId=98"
+    },
+    {
+      "id": 99,
+      "label": "19.10.2026 - 23.10.2026 (Экспортные)",
+      "count": 1,
+      "url": "https://uzex.uz/WeeklyQuotes?ImportId=99"
+    },
+    {
+      "id": 94,
+      "label": "12.10.2026 - 16.10.2026 (Внутренние)",
+      "count": 1355,
+      "url": "https://uzex.uz/WeeklyQuotes?ImportId=94"
+    },
+    {
+      "id": 95,
+      "label": "12.10.2026 - 16.10.2026 (Экспортные)",
+      "count": 2,
+      "url": "https://uzex.uz/WeeklyQuotes?ImportId=95"
+    },
+    {
+      "id": 90,
+      "label": "05.10.2026 - 09.10.2026 (Внутренние)",
+      "count": 1360,
+      "url": "https://uzex.uz/WeeklyQuotes?ImportId=90"
+    },
+    {
+      "id": 91,
+      "label": "05.10.2026 - 09.10.2026 (Экспортные)",
+      "count": 3,
+      "url": "https://uzex.uz/WeeklyQuotes?ImportId=91"
+    }
+  ]
+}
