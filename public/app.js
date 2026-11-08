@@ -29,14 +29,14 @@ function hydrate(root = document) { root.querySelectorAll('[data-icon]').forEach
 hydrate();
 const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 const fmt = n => new Intl.NumberFormat('uz-UZ', { maximumFractionDigits: 2 }).format(n);
-const toolNames = { market_quotes: 'UZEX haftalik kotirovkalari', search_lots: 'Takliflar qidirildi', market_summary: 'Bozor tahlili', account_overview: 'Hisob tekshirildi', service_directory: 'Xizmatlar topildi', prepare_listing: 'Sotuv e’loni tayyorlandi', prepare_order: 'Xarid so‘rovi tayyorlandi' };
+const toolNames = { essential_products: 'Asosiy mahsulotlar', market_quotes: 'UZEX haftalik kotirovkalari', search_lots: 'Takliflar qidirildi', market_summary: 'Bozor tahlili', account_overview: 'Hisob tekshirildi', service_directory: 'Xizmatlar topildi', prepare_listing: 'Sotuv e’loni tayyorlandi', prepare_order: 'Xarid so‘rovi tayyorlandi' };
 let role = 'buyer', busy = false, recognition = null, listening = false;
 const views = { buyer: { html: '' }, seller: { html: '' } };
 const suggestionSets = {
   buyer: [
     ['search', 'Mahsulot topish', 'Mos takliflarni birga izlaymiz', 'Toshkentdan 20 tonna sement topib bering'],
     ['compare', 'Takliflarni solishtirish', 'Narx va shartlarni taqqoslang', 'Sement takliflarini solishtirib bering'],
-    ['chart', 'Bozor bilan tanishish', 'Narxlar va mavjud takliflar', 'Bozor tahlili va narxlar'],
+    ['chart', 'Bozor bilan tanishish', 'Narxlar va mavjud takliflar', 'Asosiy mahsulotlar katalogi'],
     ['wallet', 'Hisob va buyurtmalar', 'Operatsiyalaringizni kuzating', 'Hisobim va buyurtmalar holati'],
   ],
   seller: [
@@ -92,7 +92,8 @@ function applyActionStatus(a) {
   });
 }
 function card(c) {
-  if (c.type === 'quotes') return `<div class="table-wrap"><p>${esc(c.note)}</p><p>${c.total} ta natija · ${c.offset + 1}–${c.offset + c.quotes.length} · Yangilangan: ${esc(c.fetched_at)}</p><table class="market-table"><thead><tr><th>Mahsulot / birlik</th><th>Manbadagi narx</th><th>O‘zgarish</th><th>Davr</th><th>Manba</th></tr></thead><tbody>${c.quotes.map(q => `<tr><td>${esc(q.name)}</td><td>${fmt(q.price)}</td><td>${fmt(q.change)} (${esc(q.change_percent)})</td><td>${esc(q.period_start)} – ${esc(q.period_end)}</td><td><a href="${esc(q.source_url)}" target="_blank" rel="noopener">UZEX</a></td></tr>`).join('')}</tbody></table></div>`;
+  if (c.type === 'essentials') return `<p>${esc(c.note)}</p><div class="lot-grid">${c.items.map(p => `<div class="lot-card"><h3>${esc(p.name)}</h3><p>${esc(p.category)}</p>${p.quotes.length ? p.quotes.map(q => `<p><strong>${esc(q.name)}</strong><br>${fmt(q.price)} · ${esc(q.period_start)} – ${esc(q.period_end)}<br><a href="${esc(q.source_url)}" target="_blank" rel="noopener">UZEX haftalik manba</a></p>`).join('') : '<p>Narx mavjud emas — UZEX haftalik manbasida topilmadi.</p>'}<button class="lot-select" data-prompt="${esc(p.key)} narxlari">Narxlarni ko‘rish ↗</button></div>`).join('')}</div>`;
+  if (c.type === 'quotes') return `<div class="table-wrap"><p>${esc(c.note)}</p>${c.missing_product ? `<p>${esc(c.missing_product)}</p>` : ''}<p>${c.total} ta natija · ${c.offset + 1}–${c.offset + c.quotes.length} · Yangilangan: ${esc(c.fetched_at)}</p><table class="market-table"><thead><tr><th>Mahsulot / birlik</th><th>Manbadagi narx</th><th>O‘zgarish</th><th>Davr</th><th>Manba</th></tr></thead><tbody>${c.quotes.map(q => `<tr><td>${esc(q.name)}</td><td>${fmt(q.price)}</td><td>${fmt(q.change)} (${esc(q.change_percent)})</td><td>${esc(q.period_start)} – ${esc(q.period_end)}</td><td><a href="${esc(q.source_url)}" target="_blank" rel="noopener">UZEX</a></td></tr>`).join('')}</tbody></table></div>`;
   if (c.type === 'lots') return lotsCard(c.lots);
   if (c.type === 'action') return actionCard(c.action);
   if (c.type === 'services') return c.services.map(s => `<a class="service-card" href="${esc(s.url)}" target="_blank" rel="noopener"><strong>${esc(s.name)} <span>↗</span></strong><p>${esc(s.description)}</p></a>`).join('');

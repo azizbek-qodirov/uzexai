@@ -21,3 +21,15 @@ test('benchmark migration preserves stock and confirmed orders across restart',(
  assert.equal(s.execute('account_overview',{},'a','buyer').balance,500000000-5332087.9);
  }finally{s.close();rmSync(dir,{recursive:true,force:true});}
 });
+test('essential catalogue includes unavailable bricks and sourced purchasable staples',()=>{
+ const s=createStore();try{
+ const c=s.execute('essential_products',{},'a','buyer');assert.equal(c.items.length,13);
+ const brick=c.items.find(p=>p.key === "g'isht");assert.equal(brick.status,'price_unavailable');assert.deepEqual(brick.quotes,[]);
+ assert.equal(s.execute('search_lots',{query:'bricks'},'a','buyer').lots.length,0);
+ assert.equal(s.execute('search_lots',{query:'rebar'},'a','buyer').lots.length,2);
+ assert.equal(s.execute('search_lots',{query:'flour'},'a','buyer').lots.length,2);
+ assert.equal(s.execute('search_lots',{query:'sugar'},'a','buyer').lots[0].price,10250000);
+ const cement=s.execute('search_lots',{query:'cement'},'a','buyer').lots;assert.equal(cement.length,6);
+ for(const group of c.items)for(const q of group.quotes){assert.ok(q.price>0);assert.equal(q.import_id,102);assert.ok(q.source_url.startsWith('https://uzex.uz/'));}
+ }finally{s.close();}
+});

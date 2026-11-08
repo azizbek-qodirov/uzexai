@@ -43,7 +43,7 @@ test('buyer search, prepare, explicit confirmation and duplicate protection', ()
   const s = createStore();
   try {
     const lots = s.execute('search_lots', { query: 'sement', region: 'Toshkent', quantity: 20 }, 'a', 'buyer').lots;
-    assert.equal(lots.length, 1);
+    assert.equal(lots.length, 2);
     const { action } = s.execute('prepare_order', { lot_id: lots[0].id, quantity: 20 }, 'a', 'buyer');
     assert.equal(s.execute('account_overview', {}, 'a', 'buyer').orders.length, 0);
     assert.throws(() => s.confirm(action.id, 'other-session', 'buyer'));
@@ -124,12 +124,12 @@ test('Gemini tool roundtrip preserves call metadata and returns database-backed 
     if (count === 1) return Response.json({ candidates: [{ content: { role: 'model', parts: [{ thoughtSignature: 'preserve-me', functionCall: { id: 'call-1', name: 'search_lots', args: { query: 'sement' } } }] } }] });
     assert.equal(request.contents[1].parts[0].thoughtSignature, 'preserve-me');
     assert.equal(request.contents[2].parts[0].functionResponse.id, 'call-1');
-    assert.equal(request.contents[2].parts[0].functionResponse.response.lots.length, 3);
+    assert.equal(request.contents[2].parts[0].functionResponse.response.lots.length, 6);
     return Response.json({ candidates: [{ content: { role: 'model', parts: [{ text: 'Uchta demo taklif topildi.' }] } }] });
   };
   try {
     const result = await ai.chat('Sement toping', { history: [] }, 'a', 'buyer');
-    assert.equal(count, 2); assert.equal(result.engine, 'gemini'); assert.equal(result.cards[0].lots.length, 3);
+    assert.equal(count, 2); assert.equal(result.engine, 'gemini'); assert.equal(result.cards[0].lots.length, 6);
   } finally { globalThis.fetch = original; s.close(); }
 });
 

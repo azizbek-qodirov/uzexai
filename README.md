@@ -94,3 +94,10 @@ These are published weekly quotations, **not today's live prices or available st
 The eight benchmark mappings live in `lib/quotes.mjs`. Startup updates their names/prices once, preserves stock, balances and completed orders, and cancels pending orders for those lots so users review new prices. Other listings are untouched. Quantities, sellers and regions remain demonstration data. Reference products are searchable as quotes, not fabricated purchasable inventory.
 
 Refresh the published weekly snapshot with Python 3: `python scripts/import-quotes.py`, then restart the app. The importer discovers the period selector, follows all pages and validates consecutive row numbers before writing the manifest. It fails on missing/invalid data. No API key is required. Review source changes before committing a refresh; benchmark mappings are deliberately explicit and versioned.
+
+
+### Essential commodity catalogue
+
+Ask **“Asosiy mahsulotlar katalogi”** for 13 curated groups: sugar, cement, bricks, rebar, flour, wheat, coal, urea, ammonium nitrate, diesel, polyethylene, copper and cotton. The catalogue shows exact weekly variants, dates and source links. Nineteen additional demo lots bring inventory to 27 offers. Prices match the selected weekly source rows; quantities, regions, sellers and delivery remain artificial. Existing stock is never replenished on restart.
+
+**Bricks (g‘isht):** no matching product was found in this weekly snapshot. The catalogue explicitly shows price unavailable; no guessed price or tonne-based brick lot is created. Piece-based trading needs a separate unit-aware implementation and a verified supplier price.
