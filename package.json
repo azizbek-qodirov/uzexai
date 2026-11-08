@@ -7,7 +7,7 @@
     "dev": "node --env-file-if-exists=.env server.mjs",
     "start": "node --env-file-if-exists=.env server.mjs",
     "test": "node --test tests/*.test.mjs",
-    "check": "node --check server.mjs && node --check lib/store.mjs && node --check lib/assistant.mjs && node --check lib/live.mjs && node --check lib/voice-actions.mjs && node --check public/app.js && node --check public/markdown.js && node --check public/live-voice.js && node --check public/mic-worklet.js && node --check public/voice-ui.js && node --check public/voice-workspace.js"
+    "check": "node --check server.mjs && node --check lib/store.mjs && node --check lib/assistant.mjs && node --check lib/live.mjs && node --check lib/voice-actions.mjs && node --check public/app.js && node --check public/markdown.js && node --check public/live-voice.js && node --check public/mic-worklet.js && node --check public/voice-ui.js && node --check public/voice-workspace.js && node --check lib/analytics.mjs && node --check lib/quotes.mjs && node --check lib/essentials.mjs && node --check scripts/start-container.mjs"
   },
   "engines": {
     "node": ">=22.13"

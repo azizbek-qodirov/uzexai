@@ -48,7 +48,7 @@ Browser providers may process dictation audio. During a live call audio and tran
 - Inline tool results, offer cards, confirmation cards, error/retry states, and a focused two-column responsive layout.
 - Official service links: exchange, state procurement, logistics, yarmarka, agro and business procurement.
 
-Inventory, seller names, quantities, balances, delivery estimates and transactions are **synthetic**. The eight demo lot prices now use explicitly mapped public weekly benchmarks (their product names match the reference); they are not executable exchange offers. Seed balance: 500,000,000 UZS; quantities: tonnes; prices: UZS/tonne. Totals exclude transport, taxes and fees. Seller listings are stored separately from the reference demo inventory; they are not published to the buyer catalogue. This is a demonstration of orchestration, not a full exchange matching engine.
+Inventory, seller names, quantities, balances, delivery estimates and transactions are **synthetic**. The eight demo lot prices now use explicitly mapped public weekly benchmarks (their product names match the reference); they are not executable exchange offers. Seed balance: 500,000,000 UZS; quantities: tonnes; prices: UZS/tonne. Totals exclude transport, taxes and fees. Confirmed seller listings are also published to the shared buyer catalogue. This is a demonstration of orchestration, not a full exchange matching engine.
 
 ## Rules and extension points
 
@@ -56,7 +56,7 @@ Inventory, seller names, quantities, balances, delivery estimates and transactio
 
 For a production integration, replace each demo tool adapter with an authorized UzEx service integration. Procurement and logistics are presently **directory links only**. Actual payments, bids, E-IMZO, document submission, official accounts and live prices are not integrated. Full UzEx automation requires service APIs, authentication, permissions and official integration arrangements.
 
-`data/uzex-demo.sqlite` is created automatically and ignored by Git. Database records survive server restarts, but anonymous sessions and conversation history are in memory: restarting creates a fresh browser session and prior session records will no longer be accessible through that session. Inactive sessions expire after 24 hours. “Yangi suhbat” clears the current role's conversation, not its demo transactions. Demo inventory is shared across sessions. To restore original stock for a presentation, stop the server, remove the generated `data` directory, then restart. Do not use this prototype as a public multiuser production system.
+`data/uzex-demo.sqlite` is created automatically and ignored by Git. Database records survive server restarts, but anonymous sessions and conversation history are in memory: restarting restores an existing anonymous account through its persistent cookie; conversation history starts fresh. Inactive sessions expire after 24 hours. “Yangi suhbat” clears the current role's conversation, not its demo transactions. Demo inventory is shared across sessions. To restore original stock for a presentation, stop the server, remove the generated `data` directory, then restart. Do not use this prototype as a public multiuser production system.
 
 ## Verification
 
@@ -101,3 +101,41 @@ Refresh the published weekly snapshot with Python 3: `python scripts/import-quot
 Ask **“Asosiy mahsulotlar katalogi”** for 13 curated groups: sugar, cement, bricks, rebar, flour, wheat, coal, urea, ammonium nitrate, diesel, polyethylene, copper and cotton. The catalogue shows exact weekly variants, dates and source links. Nineteen additional demo lots bring inventory to 27 offers. Prices match the selected weekly source rows; quantities, regions, sellers and delivery remain artificial. Existing stock is never replenished on restart.
 
 **Bricks (g‘isht):** no matching product was found in this weekly snapshot. The catalogue explicitly shows price unavailable; no guessed price or tonne-based brick lot is created. Piece-based trading needs a separate unit-aware implementation and a verified supplier price.
+
+## Docker / server deployment
+
+With Docker Engine and the Docker Compose plugin installed on your server:
+
+```bash
+git pull
+# Optional: create .env and set GEMINI_API_KEY for Gemini chat/live voice.
+docker compose up --build -d
+docker compose logs -f uzexai
+```
+
+`docker compose up` also works in the foreground after the initial build. The startup log prints **UZEX Assist URL: http://YOUR_SERVER_IP:3000/**. The app path is **/** and the health endpoint is **/healthz**. The container tries a three-second public-IP lookup; if blocked, set `SERVER_IP` in `.env`. On a private network or behind NAT use the server address reachable from your browser. Open TCP port 3000 in the server/provider firewall.
+
+Example optional `.env` settings (Compose reads these automatically):
+
+```dotenv
+SERVER_IP=203.0.113.10
+APP_PORT=3000
+GEMINI_API_KEY=replace_with_your_key
+# Optional when serving through an HTTPS reverse proxy:
+# PUBLIC_URL=https://uzex.example.com/
+# COOKIE_SECURE=1
+```
+
+`203.0.113.10` is an example; replace it with your server IP. `PUBLIC_URL` controls the printed URL; it does not configure DNS, TLS or a reverse proxy. The port can be changed with `APP_PORT=8080`. Compose passes HTTP cookie settings explicitly so anonymous sessions work on an IP over HTTP. With HTTPS, set `COOKIE_SECURE=1`. Microphone/live voice requires HTTPS (or localhost); text chat works over the server-IP HTTP URL.
+
+SQLite data, seller listings, orders, alerts and notifications persist in the `uzex-data` named volume. Downloaded quote snapshots persist in `uzex-quotes`. `docker compose down` retains it; `docker compose down -v` deletes it. Image updates: `git pull && docker compose up --build -d`. The image uses Node 24, Python 3 for weekly refresh, runs as a non-root user, and installs only production Node dependencies. `.env` and local databases are excluded from the image.
+
+## Shared listings, analytics and price alerts
+
+Confirmed seller listings are published to the shared buyer catalogue immediately, including across different browser sessions. Old confirmed listings are backfilled once. Sold stock is not reset on restart. Drafts/cancelled actions are not published. If the requested city has no qualifying stock, search returns qualifying offers from other regions and labels the fallback; quantity and maximum-price filters remain enforced.
+
+Ask **“Shakar narxlari tahlili”** for dated weekly averages, ranges and historical changes across matching product variants. The arithmetic mean is not volume weighted. Current in-app seller asking prices are reported separately from official weekly benchmarks; neither predicts future prices. If this week's official data is unavailable, the last available dates are shown. Unsupported products/units fail explicitly.
+
+Seller prices in kg or tonnes are normalized to UZS/tonne. Prices over **2× the comparable weekly average** are rejected by the server during preparation and confirmation. Over **1.5×** produces a warning. A missing benchmark blocks publication pending clarification; seller-entered prices cannot alter the official validation benchmark. For example, sugar at 100,000 UZS/kg is rejected, rather than accepted as 100,000 UZS/tonne.
+
+Ask **“1 tonna shakar narxi tushsa ogohlantir”** to save a price alert. Without an explicit target it uses 5% below the current seller-price baseline or weekly benchmark. Alerts are stored in SQLite, checked every minute while the server runs and immediately on seller confirmation. Weekly quotes refresh on startup and every six hours via Python; configure `PYTHON_BIN` or set `QUOTE_AUTO_REFRESH=0` to disable network refresh. Failed refreshes retain the last imported database. Regional alerts require a matching seller offer; non-regional alerts can also use refreshed weekly averages. In-app notifications are persisted, isolated by browser session and shown on return. No email, Telegram or browser push is sent. The browser session cookie lasts 30 days and is restored across server restarts; clearing it loses access to that anonymous session. Ask **“Kuzatuvlar”** to inspect/cancel alerts.

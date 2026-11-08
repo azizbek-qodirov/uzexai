@@ -5,7 +5,7 @@ import { once } from 'node:events';
 
 test('HTTP demo: cookies, cards, seller flow, confirmations, origins and static assets', { timeout: 20000 }, async () => {
   const port = 3100 + Math.floor(Math.random() * 1000);
-  const child = spawn(process.execPath, ['server.mjs'], { cwd: new URL('..', import.meta.url), env: { ...process.env, PORT: String(port), AI_MODE: 'demo', DATABASE_PATH: ':memory:' }, stdio: ['ignore', 'pipe', 'pipe'] });
+  const child = spawn(process.execPath, ['server.mjs'], { cwd: new URL('..', import.meta.url), env: { ...process.env, PORT: String(port), AI_MODE: 'demo', QUOTE_AUTO_REFRESH:'0', DATABASE_PATH: ':memory:' }, stdio: ['ignore', 'pipe', 'pipe'] });
   try {
     await new Promise((resolve, reject) => {
       child.stdout.on('data', b => { if (String(b).includes('http://localhost')) resolve(); });
@@ -28,14 +28,14 @@ test('HTTP demo: cookies, cards, seller flow, confirmations, origins and static 
       if (/\.m?js$/.test(path)) assert.match(asset.headers.get('content-type'), /javascript/);
     }
     const search = await post('chat', { role: 'buyer', text: 'Toshkentdan 20 tonna sement topib bering' });
-    assert.equal(search.status, 200); assert.equal(search.body.cards[0].lots.length, 1);
+    assert.equal(search.status, 200); assert.equal(search.body.cards[0].lots.length, 2);
     const order = await post('chat', { role: 'buyer', text: 'LOT-1001 dan 20 tonna olaman' });
     const id = order.body.cards[0].action.id;
     assert.equal((await post('confirm', { role: 'seller', id })).status, 400);
     assert.equal((await post('confirm', { role: 'buyer', id })).body.status, 'confirmed');
     assert.equal((await post('confirm', { role: 'buyer', id })).status, 400);
     const account = await post('chat', { role: 'buyer', text: 'Hisobim holati' });
-    assert.equal(account.body.cards[0].balance, 485600000);
+    assert.equal(account.body.cards[0].balance, 500000000 - 20 * 533208.79);
     assert.equal(account.body.cards[0].orders.length, 1);
     const listing = await post('chat', { role: 'seller', text: 'Toshkentda 100 tonna M-400 sement sotaman, tonnasi 720000 so‘m' });
     assert.equal(listing.body.cards[0].action.kind, 'listing');
@@ -53,3 +53,4 @@ test('HTTP demo: cookies, cards, seller flow, confirmations, origins and static 
     if (child.exitCode === null) { child.kill(); await once(child, 'exit'); }
   }
 });
+

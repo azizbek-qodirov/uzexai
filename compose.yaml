@@ -1,0 +1,38 @@
+services:
+  uzexai:
+    build: .
+    init: true
+    restart: unless-stopped
+    ports:
+      - "${APP_PORT:-3000}:3000"
+    environment:
+      HOST: 0.0.0.0
+      PORT: "3000"
+      NODE_ENV: production
+      DATABASE_PATH: /app/storage/uzex.sqlite
+      PYTHON_BIN: python3
+      QUOTE_AUTO_REFRESH: "${QUOTE_AUTO_REFRESH:-1}"
+      # A Gemini key enables natural-language chat and live voice.
+      GEMINI_API_KEY: "${GEMINI_API_KEY:-}"
+      GEMINI_MODEL: "${GEMINI_MODEL:-gemini-flash-latest}"
+      GEMINI_LIVE_MODEL: "${GEMINI_LIVE_MODEL:-gemini-3.1-flash-live-preview}"
+      GEMINI_LIVE_VOICE: "${GEMINI_LIVE_VOICE:-Kore}"
+      AI_MODE: "${AI_MODE:-}"
+      APP_PORT: "${APP_PORT:-3000}"
+      SERVER_IP: "${SERVER_IP:-}"
+      PUBLIC_URL: "${PUBLIC_URL:-}"
+      COOKIE_SECURE: "${COOKIE_SECURE:-0}"
+    volumes:
+      - uzex-data:/app/storage
+      - uzex-quotes:/app/data/quotes
+    healthcheck:
+      test: ["CMD", "node", "-e", "fetch('http://127.0.0.1:3000/healthz').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"]
+      interval: 30s
+      timeout: 5s
+      start_period: 20s
+      retries: 3
+    stop_grace_period: 15s
+
+volumes:
+  uzex-data:
+  uzex-quotes:

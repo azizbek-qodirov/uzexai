@@ -29,7 +29,7 @@ function hydrate(root = document) { root.querySelectorAll('[data-icon]').forEach
 hydrate();
 const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 const fmt = n => new Intl.NumberFormat('uz-UZ', { maximumFractionDigits: 2 }).format(n);
-const toolNames = { essential_products: 'Asosiy mahsulotlar', market_quotes: 'UZEX haftalik kotirovkalari', search_lots: 'Takliflar qidirildi', market_summary: 'Bozor tahlili', account_overview: 'Hisob tekshirildi', service_directory: 'Xizmatlar topildi', prepare_listing: 'Sotuv e’loni tayyorlandi', prepare_order: 'Xarid so‘rovi tayyorlandi' };
+const toolNames = { price_analytics:'Narx tahlili',create_price_alert:'Narx kuzatuvi',list_price_alerts:'Kuzatuvlar',cancel_price_alert:'Kuzatuv bekor qilindi', essential_products: 'Asosiy mahsulotlar', market_quotes: 'UZEX haftalik kotirovkalari', search_lots: 'Takliflar qidirildi', market_summary: 'Bozor tahlili', account_overview: 'Hisob tekshirildi', service_directory: 'Xizmatlar topildi', prepare_listing: 'Sotuv e’loni tayyorlandi', prepare_order: 'Xarid so‘rovi tayyorlandi' };
 let role = 'buyer', busy = false, recognition = null, listening = false;
 const views = { buyer: { html: '' }, seller: { html: '' } };
 const suggestionSets = {
@@ -74,12 +74,12 @@ function message(who, text) {
 }
 function lotsCard(lots) {
   if (!lots.length) return '<p class="action-disclaimer">Mos taklif yo‘q.</p>';
-  return `<div class="lot-grid">${lots.map(l => `<div class="lot-card"><div class="lot-top"><span>${esc(l.id)}</span><span class="demo-label">TAKLIF</span></div><h3>${esc(l.name)}</h3><div class="seller">${esc(l.seller)}</div><div class="lot-price">${fmt(l.price)} <small>so‘m / tonna</small></div><div class="lot-meta"><span>⌖ ${esc(l.region)}</span><span>· ${fmt(l.quantity)} tonna</span><span>· ${esc(l.delivery)}</span></div>${role === 'buyer' ? `<button class="lot-select" data-select="${esc(l.id)}">Xaridni tayyorlash <span>↗</span></button>` : ''}</div>`).join('')}</div>`;
+  return `<div class="lot-grid">${lots.map(l => `<div class="lot-card"><div class="lot-top"><span>${esc(l.id)}</span><span class="demo-label">${l.origin === 'seller' ? 'SOTUVCHI E’LONI' : 'NAMUNA'}</span></div><h3>${esc(l.name)}</h3><div class="seller">${esc(l.seller)}</div><div class="lot-price">${fmt(l.price)} <small>so‘m / tonna</small></div><div class="lot-meta"><span>⌖ ${esc(l.region)}</span><span>· ${fmt(l.quantity)} tonna</span><span>· ${esc(l.delivery)}</span></div>${role === 'buyer' ? `<button class="lot-select" data-select="${esc(l.id)}">Xaridni tayyorlash <span>↗</span></button>` : ''}</div>`).join('')}</div>`;
 }
 function actionCard(a) {
   const pending = a.status === 'pending';
   const label = pending ? 'TASDIQ KUTILMOQDA' : a.status === 'confirmed' ? 'TASDIQLANDI' : 'BEKOR QILINDI';
-  return `<div class="action-card" data-action-id="${esc(a.id)}" data-kind="${esc(a.kind)}"><div class="action-heading"><span>${a.kind === 'order' ? 'Xarid so‘rovi' : 'Sotuv e’loni'}</span><span class="demo-label">${label}</span></div><h3>${esc(a.name)}</h3>${a.lot_id ? `<div class="action-detail"><span>Lot raqami</span><strong>${esc(a.lot_id)}</strong></div>` : ''}<div class="action-detail"><span>Hudud</span><strong>${esc(a.region)}</strong></div><div class="action-detail"><span>Hajm</span><strong>${fmt(a.quantity)} tonna</strong></div><div class="action-detail"><span>Bir tonna narxi</span><strong>${fmt(a.price)} so‘m</strong></div><div class="action-total"><span>Jami qiymat</span><strong>${fmt(a.total)} <small>so‘m</small></strong></div><p class="action-disclaimer">Transport, soliqlar va komissiyalar kiritilmagan.</p>${pending ? `<div class="action-buttons"><button class="primary-button" data-confirm="${esc(a.id)}">So‘rovni tasdiqlash</button><button class="secondary-button" data-cancel="${esc(a.id)}">Bekor qilish</button></div>` : ''}<div class="action-result" role="status">${pending ? '' : outcomeMessage(a)}</div></div>`;
+  return `<div class="action-card" data-action-id="${esc(a.id)}" data-kind="${esc(a.kind)}"><div class="action-heading"><span>${a.kind === 'order' ? 'Xarid so‘rovi' : 'Sotuv e’loni'}</span><span class="demo-label">${label}</span></div><h3>${esc(a.name)}</h3>${a.lot_id ? `<div class="action-detail"><span>Lot raqami</span><strong>${esc(a.lot_id)}</strong></div>` : ''}<div class="action-detail"><span>Hudud</span><strong>${esc(a.region)}</strong></div><div class="action-detail"><span>Hajm</span><strong>${fmt(a.quantity)} tonna</strong></div><div class="action-detail"><span>Bir tonna narxi</span><strong>${fmt(a.price)} so‘m</strong></div><div class="action-total"><span>Jami qiymat</span><strong>${fmt(a.total)} <small>so‘m</small></strong></div>${a.comparison?.warning ? `<p class="action-disclaimer">${esc(a.comparison.warning)}</p>` : ''}<p class="action-disclaimer">Transport, soliqlar va komissiyalar kiritilmagan.</p>${pending ? `<div class="action-buttons"><button class="primary-button" data-confirm="${esc(a.id)}">So‘rovni tasdiqlash</button><button class="secondary-button" data-cancel="${esc(a.id)}">Bekor qilish</button></div>` : ''}<div class="action-result" role="status">${pending ? '' : outcomeMessage(a)}</div></div>`;
 }
 function outcomeMessage(a) { return a.status === 'confirmed' ? a.kind === 'order' ? '✓ Buyurtmangiz muvaffaqiyatli yaratildi.' : '✓ Sotuv e’loningiz joylashtirildi.' : 'So‘rov bekor qilindi.'; }
 function applyActionStatus(a) {
@@ -92,9 +92,12 @@ function applyActionStatus(a) {
   });
 }
 function card(c) {
+  if (c.type === 'analytics') return c.available ? `<div class="account-card"><h3>${esc(c.product)} · narx tahlili</h3>${c.active_market ? `<p>Hozir ilovadagi ${c.active_market.count} ta sotuvchi taklifi: o‘rtacha ${fmt(c.active_market.average)} UZS/tonna (${fmt(c.active_market.average/1000)} UZS/kg). Hududlar: ${esc(c.active_market.regions.join(', '))}</p>` : '<p>Hozir ilovada mos sotuvchi taklifi yo‘q; quyida haftalik benchmark.</p>'}<p>O‘rtacha: <strong>${fmt(c.average)} UZS/tonna · ${fmt(c.average_per_kg)} UZS/kg</strong></p><p>Oraliq: ${fmt(c.min)} – ${fmt(c.max)} UZS/tonna</p><p>Tarixiy o‘zgarish: ${c.change_percent === null ? 'Ma’lumot yetarli emas' : fmt(c.change_percent) + '%'}</p><div class="table-wrap"><table class="market-table"><thead><tr><th>Hafta</th><th>O‘rtacha UZS/tonna</th><th>Qator sanalari</th><th>Manba</th></tr></thead><tbody>${c.series.map(p=>`<tr><td>${esc(p.label)}</td><td>${fmt(p.average)}</td><td>${esc(p.observed_dates.join(', '))}</td><td><a href="${esc(p.source_url)}" target="_blank" rel="noopener">UZEX</a></td></tr>`).join('')}</tbody></table></div><p>${esc(c.note)}</p></div>` : `<p>${esc(c.note)}</p>`;
+  if (c.type === 'alert') return `<div class="account-card"><p>${esc(c.note)}</p>${c.target ? `<p>Maqsad: ${fmt(c.target)} UZS/tonna · ${fmt(c.quantity)} tonna · ${esc(c.region||'Barcha hududlar')}</p>` : ''}</div>`;
+  if (c.type === 'notifications') return `<div class="account-card"><h3>Narx kuzatuvlari</h3>${c.alerts.map(a=>`<p>${esc(a.query)} · ${fmt(a.target)} UZS/tonna · ${esc(a.region||'Barcha hududlar')} · ${esc(a.status)} ${a.status==='active'?`<button data-prompt="Kuzatuvni bekor qilish ${esc(a.id)}">Bekor qilish</button>`:''}</p>`).join('')}${c.notifications.map(n=>`<p>${esc(n.message)}</p>`).join('')}</div>`;
   if (c.type === 'essentials') return `<p>${esc(c.note)}</p><div class="lot-grid">${c.items.map(p => `<div class="lot-card"><h3>${esc(p.name)}</h3><p>${esc(p.category)}</p>${p.quotes.length ? p.quotes.map(q => `<p><strong>${esc(q.name)}</strong><br>${fmt(q.price)} · ${esc(q.period_start)} – ${esc(q.period_end)}<br><a href="${esc(q.source_url)}" target="_blank" rel="noopener">UZEX haftalik manba</a></p>`).join('') : '<p>Narx mavjud emas — UZEX haftalik manbasida topilmadi.</p>'}<button class="lot-select" data-prompt="${esc(p.key)} narxlari">Narxlarni ko‘rish ↗</button></div>`).join('')}</div>`;
   if (c.type === 'quotes') return `<div class="table-wrap"><p>${esc(c.note)}</p>${c.missing_product ? `<p>${esc(c.missing_product)}</p>` : ''}<p>${c.total} ta natija · ${c.offset + 1}–${c.offset + c.quotes.length} · Yangilangan: ${esc(c.fetched_at)}</p><table class="market-table"><thead><tr><th>Mahsulot / birlik</th><th>Manbadagi narx</th><th>O‘zgarish</th><th>Davr</th><th>Manba</th></tr></thead><tbody>${c.quotes.map(q => `<tr><td>${esc(q.name)}</td><td>${fmt(q.price)}</td><td>${fmt(q.change)} (${esc(q.change_percent)})</td><td>${esc(q.period_start)} – ${esc(q.period_end)}</td><td><a href="${esc(q.source_url)}" target="_blank" rel="noopener">UZEX</a></td></tr>`).join('')}</tbody></table></div>`;
-  if (c.type === 'lots') return lotsCard(c.lots);
+  if (c.type === 'lots') return `${c.note ? `<p>${esc(c.note)} ${esc(c.available_regions?.join(', '))}</p>` : ''}${lotsCard(c.lots)}`;
   if (c.type === 'action') return actionCard(c.action);
   if (c.type === 'services') return c.services.map(s => `<a class="service-card" href="${esc(s.url)}" target="_blank" rel="noopener"><strong>${esc(s.name)} <span>↗</span></strong><p>${esc(s.description)}</p></a>`).join('');
   if (c.type === 'account' && !c.error) return `<div class="account-card"><span>HISOB BALANSI</span><strong>${fmt(c.balance)} so‘m</strong><div class="record">${c.orders.length} ta xarid · ${c.listings.length} ta sotuv e’loni</div>${c.orders.map(o => `<div class="record">Xarid · ${esc(o.lot_id)} · ${fmt(o.quantity)} tonna · ${fmt(o.total)} so‘m</div>`).join('')}${c.listings.map(l => `<div class="record">E’lon · ${esc(l.name)} · ${fmt(l.quantity)} tonna · ${fmt(l.price)} so‘m/t</div>`).join('')}</div>`;
@@ -213,3 +216,18 @@ $('#dialogDone').addEventListener('click', () => $('#infoDialog').close());
 $('#infoDialog').addEventListener('click', e => { if (e.target === $('#infoDialog')) { const r = e.target.getBoundingClientRect(); if (e.clientX < r.left || e.clientX > r.right || e.clientY < r.top || e.clientY > r.bottom) e.target.close(); } });
 renderWelcome();
 
+
+// Persistent notifications remain in SQLite; show each once in this page lifetime.
+const displayedPriceNotifications = new Set();
+async function pollPriceNotifications() {
+  try {
+    const response=await fetch('/api/notifications');if(!response.ok)return;
+    const result=await response.json();
+    for(const n of result.notifications||[])if(!displayedPriceNotifications.has(n.id)) {
+      displayedPriceNotifications.add(n.id);message('assistant',`Narx ogohlantirishi: ${n.message}`);
+    }
+  } catch { /* Retry on next poll after a temporary network failure. */ }
+}
+pollPriceNotifications();
+const priceNotificationTimer=setInterval(pollPriceNotifications,30000);
+priceNotificationTimer.unref?.();
